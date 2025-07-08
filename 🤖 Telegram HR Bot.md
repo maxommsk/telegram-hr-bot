@@ -73,12 +73,12 @@ POSTGRES_PASSWORD=your_password_here
 createdb telegram_hr_bot
 
 # Запустите приложение для создания таблиц
-python src/main.py
+python main.py
 ```
 
 ### 6. Запуск бота
 ```bash
-python src/main.py
+python main.py
 ```
 
 ## 📱 Команды бота

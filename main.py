@@ -12,14 +12,13 @@ load_dotenv()
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from src.models.user import db
-from src.routes.user import user_bp
-from src.bot.telegram_bot import TelegramHRBot
-from src.scheduler import NotificationScheduler
+from user import db
+from telegram_bot import TelegramHRBot
+from scheduler import NotificationScheduler
 
 # Настройка логирования
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler('logs/telegram_hr_bot.log'),
@@ -63,7 +62,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 CORS(app, origins="*")
 
 # Регистрируем blueprints
-app.register_blueprint(user_bp, url_prefix='/api')
+#app.register_blueprint(user_bp, url_prefix='/api')
 
 # Инициализация базы данных
 db.init_app(app)
@@ -77,10 +76,10 @@ def create_tables():
     with app.app_context():
         try:
             # Импортируем все модели для создания таблиц
-            from src.models.user import User
-            from src.models.job import Job
-            from src.models.application import Application
-            from src.models.subscription import Subscription
+            from user import User
+            from job import Job
+            from application import Application
+            from subscription import Subscription
             
             db.create_all()
             logger.info("Таблицы базы данных созданы успешно")
@@ -156,10 +155,10 @@ def webhook():
 def get_stats():
     """Возвращает статистику системы"""
     try:
-        from src.models.user import User
-        from src.models.job import Job
-        from src.models.application import Application
-        from src.models.subscription import Subscription
+        from user import User
+        from job import Job
+        from application import Application
+        from subscription import Subscription
         
         stats = {
             'users_total': User.query.count(),

@@ -5,9 +5,9 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-from src.models.user import db
-from src.models.job import Job
-from src.models.subscription import Subscription
+from user import db
+from job import Job
+from subscription import Subscription
 
 logger = logging.getLogger(__name__)
 

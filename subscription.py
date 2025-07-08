@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from src.models.user import db
+from user import db
 import json
 
 class Subscription(db.Model):

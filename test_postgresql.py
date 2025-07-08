@@ -17,11 +17,11 @@ os.environ['FLASK_ENV'] = 'testing'
 os.environ['POSTGRES_DB'] = 'telegram_hr_bot_test'
 os.environ['TELEGRAM_BOT_TOKEN'] = 'test_token'
 
-from src.main import app, db
-from src.models.user import User
-from src.models.job import Job
-from src.models.application import Application
-from src.models.subscription import Subscription
+from main import app, db
+from user import User
+from job import Job
+from application import Application
+from subscription import Subscription
 
 class TestDatabaseModels(unittest.TestCase):
     """Тестирование моделей базы данных"""
