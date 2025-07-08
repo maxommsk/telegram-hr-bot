@@ -55,3 +55,5 @@ Thumbs.db
 backups/
 *.bak
 " > .gitignore
+sync.bat
+update.bat
