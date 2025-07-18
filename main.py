@@ -39,18 +39,31 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your_super_secret_key_
 app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))  # 16MB
 
 # Конфигурация PostgreSQL
-database_url = os.getenv('DATABASE_URL')
-if not database_url:
-    # Формируем URL из отдельных параметров
-    postgres_host = os.getenv('POSTGRES_HOST', 'localhost')
-    postgres_port = os.getenv('POSTGRES_PORT', '5432')
-    postgres_db = os.getenv('POSTGRES_DB', 'telegram_hr_bot')
-    postgres_user = os.getenv('POSTGRES_USER', 'hr_bot_user')
-    postgres_password = os.getenv('POSTGRES_PASSWORD', 'secure_password_here')
-    
-    database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+# Собираем строку подключения к БД из переменных окружения
+db_user = os.getenv('POSTGRES_USER')
+db_password = os.getenv('POSTGRES_PASSWORD')
+db_host = os.getenv('POSTGRES_HOST')
+db_port = os.getenv('POSTGRES_PORT')
+db_name = os.getenv('POSTGRES_DB')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+# Проверяем, что все переменные загружены
+if not all([db_user, db_password, db_host, db_port, db_name]):
+    logger.error("Ключевые переменные окружения для подключения к БД в main.py не установлены!")
+    logger.error(f"POSTGRES_USER: {db_user}")
+    logger.error(f"POSTGRES_PASSWORD: {'***' if db_password else None}")
+    logger.error(f"POSTGRES_HOST: {db_host}")
+    logger.error(f"POSTGRES_PORT: {db_port}")
+    logger.error(f"POSTGRES_DB: {db_name}")
+    # Можно добавить raise ValueError для прерывания работы, если это критично
+    raise ValueError("Database environment variables not set in main.py")
+
+DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+logger.info(f"Подключение к БД в main.py: postgresql://{db_user}:***@{db_host}:{db_port}/{db_name}")
+
+# Создаем engine для health check
+engine = create_engine(DATABASE_URL)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
@@ -58,9 +71,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_timeout': 20,
     'max_overflow': 0
 }
-
-# Создаем engine для health check
-engine = create_engine(database_url)
 
 # Включаем CORS для API
 CORS(app, origins="*")
