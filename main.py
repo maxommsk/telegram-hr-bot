@@ -2,10 +2,17 @@ import os
 from threading import Thread
 from flask import Flask, jsonify
 from dotenv import load_dotenv
-from application import logger
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
 from database import init_db, engine
+
+# ДОБАВИТЬ ЭТОТ БЛОК
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
