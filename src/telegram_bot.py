@@ -57,8 +57,7 @@ class TelegramHRBot:
                     username=telegram_user.username,
                     first_name=telegram_user.first_name,
                     last_name=telegram_user.last_name,
-                    user_type=\'jobseeker\',
-                    is_active=True,
+                    user_type='jobseeker',                   is_active=True,
                     last_activity=datetime.utcnow()
                 )
                 self.db.session.add(user)
@@ -80,7 +79,7 @@ class TelegramHRBot:
         try:
             telegram_id = call.from_user.id
             if role is None:
-                role = call.data.split(\'_\')[1]  # role_employer или role_jobseeker
+                role = call.data.split('_')[1]  # role_employer или role_jobseeker
             
             with self.app.app_context():
                 # Получаем пользователя заново из базы
@@ -94,7 +93,7 @@ class TelegramHRBot:
                     self.db.session.refresh(user)
                     print(f"DEBUG: Роль пользователя {telegram_id} изменена на {user.user_type}")
                     
-                    if role == \'employer\':
+                    if role == 'employer':
                         text = "🏢 Отлично! Вы зарегистрированы как работодатель.\n\nТеперь вы можете:\n• Создавать вакансии\n• Просматривать отклики\n• Управлять своими объявлениями"
                     else:
                         text = "👤 Отлично! Вы зарегистрированы как соискатель.\n\nТеперь вы можете:\n• Искать вакансии\n• Откликаться на предложения\n• Настроить уведомления"
@@ -106,6 +105,7 @@ class TelegramHRBot:
                         text=text,
                         chat_id=call.message.chat.id,
                         message_id=call.message.message_id,
+                        parse_mode='HTML',
                         reply_markup=markup
                     )
                     
@@ -128,7 +128,7 @@ class TelegramHRBot:
                 text=text,
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
         except Exception as e:
@@ -149,7 +149,7 @@ class TelegramHRBot:
                 
                 text = f"💼 <b>{job.title}</b>\n\n"
                 text += f"🏢 <b>Компания:</b> {job.company}\n"
-                text += f"📍 <b>Местоположение:</b> {job.location or \'Не указано\'}\n"
+                text += f"📍 <b>Местоположение:</b> {job.location or 'Не указано'}\n"
                 
                 # Формируем зарплату
                 if job.salary_min and job.salary_max:
@@ -161,7 +161,7 @@ class TelegramHRBot:
                 else:
                     text += f"💰 <b>Зарплата:</b> По договоренности\n"
                 
-                text += f"📅 <b>Опубликовано:</b> {job.created_at.strftime(\'%d.%m.%Y\')}\n"
+                text += f"📅 <b>Опубликовано:</b> {job.created_at.strftime('%d.%m.%Y')}\n"
                 
                 # Считаем отклики
                 applications_count = self.db.session.query(Application).filter_by(job_id=job_id).count()
@@ -170,7 +170,7 @@ class TelegramHRBot:
                 
                 markup = types.InlineKeyboardMarkup(row_width=2)
                 
-                if user and user.user_type == \'jobseeker\':
+                if user and user.user_type == 'jobseeker':
                     # Проверяем, не откликался ли уже пользователь
                     existing_app = self.db.session.query(Application).filter_by(
                         job_id=job_id,
@@ -195,7 +195,7 @@ class TelegramHRBot:
                     text=text,
                     chat_id=call.message.chat.id,
                     message_id=call.message.message_id,
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 
@@ -210,7 +210,7 @@ class TelegramHRBot:
             with self.app.app_context():
                 user = self.get_user(telegram_id)
                 
-                if not user or user.user_type != \'jobseeker\':
+                if not user or user.user_type != 'jobseeker':
                     self.bot.answer_callback_query(call.id, "Только соискатели могут откликаться на вакансии")
                     return
                 
@@ -234,7 +234,7 @@ class TelegramHRBot:
                     job_id=job_id,
                     applicant_id=user.id,
                     cover_letter="Отклик через Telegram бота",
-                    status=\'pending\',
+                    status='pending',
                     created_at=datetime.utcnow()
                 )
                 self.db.session.add(application)
@@ -256,7 +256,7 @@ class TelegramHRBot:
                     text=text,
                     chat_id=call.message.chat.id,
                     message_id=call.message.message_id,
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 
@@ -280,9 +280,9 @@ class TelegramHRBot:
                     return
                 
                 status_names = {
-                    \'pending\': \'⏳ Ожидает рассмотрения\',
-                    \'accepted\': \'✅ Принят\',
-                    \'rejected\': \'❌ Отклонен\'
+                    'pending': '⏳ Ожидает рассмотрения',
+                    'accepted': '✅ Принят',
+                    'rejected': '❌ Отклонен'
                 }
                 
                 text = f"📨 <b>Детали отклика</b>\n\n"
@@ -291,7 +291,7 @@ class TelegramHRBot:
                 text += f"👤 <b>Соискатель:</b> {applicant.get_full_name()}\n"
                 if applicant.username:
                     text += f"📱 <b>Username:</b> @{applicant.username}\n"
-                text += f"📅 <b>Дата отклика:</b> {application.created_at.strftime(\'%d.%m.%Y %H:%M\')}\n"
+                text += f"📅 <b>Дата отклика:</b> {application.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                 text += f"📊 <b>Статус:</b> {status_names.get(application.status, application.status)}\n\n"
                 
                 if application.cover_letter:
@@ -299,7 +299,7 @@ class TelegramHRBot:
                 
                 markup = types.InlineKeyboardMarkup(row_width=2)
                 
-                if application.status == \'pending\':
+                if application.status == 'pending':
                     markup.add(
                         types.InlineKeyboardButton("✅ Принять", callback_data=f"accept_app_{application_id}"),
                         types.InlineKeyboardButton("❌ Отклонить", callback_data=f"reject_app_{application_id}")
@@ -314,7 +314,7 @@ class TelegramHRBot:
                     text=text,
                     chat_id=call.message.chat.id,
                     message_id=call.message.message_id,
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 
@@ -330,7 +330,7 @@ class TelegramHRBot:
                     self.bot.answer_callback_query(call.id, "Отклик не найден")
                     return
                 
-                application.status = \'accepted\'
+                application.status = 'accepted'
                 self.db.session.commit()
                 
                 self.bot.answer_callback_query(call.id, "✅ Отклик принят!")
@@ -348,7 +348,7 @@ class TelegramHRBot:
                     self.bot.answer_callback_query(call.id, "Отклик не найден")
                     return
                 
-                application.status = \'rejected\'
+                application.status = 'rejected'
                 self.db.session.commit()
                 
                 self.bot.answer_callback_query(call.id, "❌ Отклик отклонен")
@@ -361,75 +361,75 @@ class TelegramHRBot:
         """Настройка обработчиков команд и сообщений"""
         
         # === ОСНОВНЫЕ КОМАНДЫ ===
-        @self.bot.message_handler(commands=[\'start\'])
+        @self.bot.message_handler(commands=['start'])
         def handle_start(message):
             self.handle_start_command(message)
         
-        @self.bot.message_handler(commands=[\'help\'])
+        @self.bot.message_handler(commands=['help'])
         def handle_help(message):
             self.handle_help_command(message)
         
-        @self.bot.message_handler(commands=[\'menu\'])
+        @self.bot.message_handler(commands=['menu'])
         def handle_menu(message):
             self.show_main_menu(message)
         
         # === КОМАНДЫ ДЛЯ РАБОТОДАТЕЛЕЙ ===
-        @self.bot.message_handler(commands=[\'employer\'])
+        @self.bot.message_handler(commands=['employer'])
         def handle_employer(message):
             self.switch_to_employer(message)
         
-        @self.bot.message_handler(commands=[\'newjob\'])
+        @self.bot.message_handler(commands=['newjob'])
         def handle_new_job(message):
             self.start_job_creation(message)
         
-        @self.bot.message_handler(commands=[\'myjobs\'])
+        @self.bot.message_handler(commands=['myjobs'])
         def handle_my_jobs(message):
             self.show_employer_jobs(message)
         
-        @self.bot.message_handler(commands=[\'applications\'])
+        @self.bot.message_handler(commands=['applications'])
         def handle_applications(message):
             self.show_job_applications(message)
         
         # === КОМАНДЫ ДЛЯ СОИСКАТЕЛЕЙ ===
-        @self.bot.message_handler(commands=[\'jobseeker\'])
+        @self.bot.message_handler(commands=['jobseeker'])
         def handle_jobseeker(message):
             self.switch_to_jobseeker(message)
         
-        @self.bot.message_handler(commands=[\'jobs\'])
+        @self.bot.message_handler(commands=['jobs'])
         def handle_jobs(message):
             self.show_jobs_list(message)
         
-        @self.bot.message_handler(commands=[\'search\'])
+        @self.bot.message_handler(commands=['search'])
         def handle_search(message):
             self.start_job_search(message)
         
-        @self.bot.message_handler(commands=[\'myapps\'])
+        @self.bot.message_handler(commands=['myapps'])
         def handle_my_applications(message):
             self.show_my_applications(message)
         
-        @self.bot.message_handler(commands=[\'subscribe\'])
+        @self.bot.message_handler(commands=['subscribe'])
         def handle_subscribe(message):
             self.start_subscription_creation(message)
         
-        @self.bot.message_handler(commands=[\'subscriptions\'])
+        @self.bot.message_handler(commands=['subscriptions'])
         def handle_subscriptions(message):
             self.show_subscriptions(message)
         
         # === КОМАНДЫ ПРОФИЛЯ ===
-        @self.bot.message_handler(commands=[\'profile\'])
+        @self.bot.message_handler(commands=['profile'])
         def handle_profile(message):
             self.show_profile(message)
         
-        @self.bot.message_handler(commands=[\'settings\'])
+        @self.bot.message_handler(commands=['settings'])
         def handle_settings(message):
             self.show_settings(message)
         
         # === БЫСТРЫЕ КОМАНДЫ ===
-        @self.bot.message_handler(commands=[\'quick\'])
+        @self.bot.message_handler(commands=['quick'])
         def handle_quick(message):
             self.show_quick_actions(message)
         
-        @self.bot.message_handler(commands=[\'stats\'])
+        @self.bot.message_handler(commands=['stats'])
         def handle_stats(message):
             self.show_user_stats(message)
         
@@ -463,7 +463,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 welcome_text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -474,7 +474,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if user and user.user_type == \'employer\':
+            if user and user.user_type == 'employer':
                 help_text = """
 📋 <b>Команды для работодателей:</b>\n\n<b>Управление вакансиями:</b>\n/newjob - Создать новую вакансию\n/myjobs - Мои вакансии\n/applications - Отклики на вакансии\n\n<b>Быстрые действия:</b>\n/quick - Быстрые действия\n/stats - Моя статистика\n\n<b>Общие команды:</b>\n/profile - Мой профиль\n/settings - Настройки\n/menu - Главное меню\n/help - Эта справка\n                """
             else:
@@ -487,7 +487,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 help_text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -503,8 +503,8 @@ class TelegramHRBot:
             
             # Переводим роль на русский
             role_names = {
-                \'employer\': \'Работодатель\',
-                \'jobseeker\': \'Соискатель\'
+                'employer': 'Работодатель',
+                'jobseeker': 'Соискатель'
             }
             role_display = role_names.get(user.user_type, user.user_type.title())
             
@@ -512,7 +512,7 @@ class TelegramHRBot:
             
             markup = types.InlineKeyboardMarkup(row_width=2)
             
-            if user.user_type == \'employer\':
+            if user.user_type == 'employer':
                 markup.add(
                     types.InlineKeyboardButton("➕ Новая вакансия", callback_data="new_job"),
                     types.InlineKeyboardButton("📋 Мои вакансии", callback_data="my_jobs")
@@ -543,7 +543,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 menu_text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
 
@@ -558,8 +558,8 @@ class TelegramHRBot:
             
             # Переводим роль на русский
             role_names = {
-                \'employer\': \'Работодатель\',
-                \'jobseeker\': \'Соискатель\'
+                'employer': 'Работодатель',
+                'jobseeker': 'Соискатель'
             }
             role_display = role_names.get(user.user_type, user.user_type.title())
             
@@ -567,7 +567,7 @@ class TelegramHRBot:
             
             markup = types.InlineKeyboardMarkup(row_width=2)
             
-            if user.user_type == \'employer\':
+            if user.user_type == 'employer':
                 markup.add(
                     types.InlineKeyboardButton("➕ Новая вакансия", callback_data="new_job"),
                     types.InlineKeyboardButton("📋 Мои вакансии", callback_data="my_jobs")
@@ -599,7 +599,7 @@ class TelegramHRBot:
                 text=menu_text,
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -612,7 +612,7 @@ class TelegramHRBot:
             
             markup = types.InlineKeyboardMarkup(row_width=2)
             
-            if user.user_type == \'employer\':
+            if user.user_type == 'employer':
                 markup.add(
                     types.InlineKeyboardButton("⚡ Быстрая вакансия", callback_data="new_job"),
                     types.InlineKeyboardButton("👀 Мои вакансии", callback_data="my_jobs")
@@ -636,7 +636,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 "⚡ <b>Быстрые действия</b>\n\nВыберите действие:",
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -647,7 +647,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if not user or user.user_type != \'employer\':
+            if not user or user.user_type != 'employer':
                 self.bot.send_message(
                     message.chat.id,
                     "❌ Только работодатели могут создавать вакансии.\n\nИспользуйте /employer для смены роли."
@@ -656,9 +656,9 @@ class TelegramHRBot:
             
             # Устанавливаем состояние пользователя
             self.user_states[message.from_user.id] = {
-                \'action\': \'creating_job\',
-                \'step\': \'title\',
-                \'job_data\': {}
+                'action': 'creating_job',
+                'step': 'title',
+                'job_data': {}
             }
             
             markup = types.InlineKeyboardMarkup()
@@ -669,7 +669,7 @@ class TelegramHRBot:
                 "📝 <b>Создание новой вакансии</b>\n\n"
                 "Шаг 1/5: Введите название вакансии\n"
                 "Например: <i>Python разработчик</i>, <i>Менеджер по продажам</i>",
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -699,7 +699,7 @@ class TelegramHRBot:
             for job in jobs:
                 job_text = f"💼 <b>{job.title}</b>\n"
                 job_text += f"🏢 {job.company}\n"
-                job_text += f"📍 {job.location or \'Не указано\'}\n"
+                job_text += f"📍 {job.location or 'Не указано'}\n"
                 
                 if job.salary_min and job.salary_max:
                     job_text += f"💰 {job.salary_min:,} - {job.salary_max:,} руб.\n"
@@ -741,7 +741,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
 
@@ -752,7 +752,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if user.user_type != \'employer\':
+            if user.user_type != 'employer':
                 self.bot.send_message(message.chat.id, "❌ Только работодатели могут просматривать свои вакансии")
                 return
             
@@ -768,7 +768,7 @@ class TelegramHRBot:
                 self.bot.send_message(
                     message.chat.id,
                     "📋 <b>Мои вакансии</b>\n\n😔 У вас пока нет активных вакансий.\n\nСоздайте первую вакансию!",
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 return
@@ -784,7 +784,7 @@ class TelegramHRBot:
                 job_text = f"💼 <b>{job.title}</b>\n"
                 job_text += f"🏢 {job.company}\n"
                 job_text += f"📨 Откликов: {applications_count}\n"
-                job_text += f"📅 {job.created_at.strftime(\'%d.%m.%Y\')}\n\n"
+                job_text += f"📅 {job.created_at.strftime('%d.%m.%Y')}\n\n"
                 
                 text += job_text
                 
@@ -803,7 +803,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
 
@@ -814,7 +814,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if user.user_type != \'employer\':
+            if user.user_type != 'employer':
                 self.bot.send_message(message.chat.id, "❌ Только работодатели могут просматривать отклики")
                 return
             
@@ -828,7 +828,7 @@ class TelegramHRBot:
                 self.bot.send_message(
                     message.chat.id,
                     "📨 <b>Отклики на вакансии</b>\n\n😔 У вас нет активных вакансий.",
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 return
@@ -851,7 +851,7 @@ class TelegramHRBot:
                 self.bot.send_message(
                     message.chat.id,
                     "📨 <b>Отклики на вакансии</b>\n\n😔 Пока нет откликов на ваши вакансии.",
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 return
@@ -868,14 +868,14 @@ class TelegramHRBot:
                 applicant = self.db.session.query(User).get(app_obj.applicant_id)
                 
                 status_emoji = {
-                    \'pending\': \'⏳\',
-                    \'accepted\': \'✅\',
-                    \'rejected\': \'❌\'
-                }.get(app_obj.status, \'❓\')
+                    'pending': '⏳',
+                    'accepted': '✅',
+                    'rejected': '❌'
+                }.get(app_obj.status, '❓')
                 
                 app_text = f"{status_emoji} <b>{app_obj.job.title}</b>\n"
-                app_text += f"👤 {applicant.get_full_name() if applicant else \'Неизвестный\'}\n"
-                app_text += f"📅 {app_obj.created_at.strftime(\'%d.%m.%Y %H:%M\')}\n\n"
+                app_text += f"👤 {applicant.get_full_name() if applicant else 'Неизвестный'}\n"
+                app_text += f"📅 {app_obj.created_at.strftime('%d.%m.%Y %H:%M')}\n\n"
                 
                 text += app_text
                 
@@ -894,7 +894,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
 
@@ -905,7 +905,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if user.user_type != \'jobseeker\':
+            if user.user_type != 'jobseeker':
                 self.bot.send_message(message.chat.id, "❌ Только соискатели могут просматривать свои отклики")
                 return
             
@@ -921,7 +921,7 @@ class TelegramHRBot:
                 self.bot.send_message(
                     message.chat.id,
                     "📨 <b>Мои отклики</b>\n\n😔 У вас пока нет откликов.\n\nПосмотрите доступные вакансии!",
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 return
@@ -934,14 +934,14 @@ class TelegramHRBot:
                 job = self.db.session.query(Job).get(app_obj.job_id)
                 if job:
                     status_emoji = {
-                        \'pending\': \'⏳\',
-                        \'accepted\': \'✅\',
-                        \'rejected\': \'❌\'
-                    }.get(app_obj.status, \'❓\')
+                        'pending': '⏳',
+                        'accepted': '✅',
+                        'rejected': '❌'
+                    }.get(app_obj.status, '❓')
                     
                     app_text = f"{status_emoji} <b>{job.title}</b>\n"
                     app_text += f"🏢 {job.company}\n"
-                    app_text += f"📅 {app_obj.created_at.strftime(\'%d.%m.%Y\')}\n\n"
+                    app_text += f"📅 {app_obj.created_at.strftime('%d.%m.%Y')}\n\n"
                     
                     text += app_text
                     
@@ -960,7 +960,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
 
@@ -971,7 +971,7 @@ class TelegramHRBot:
         with self.app.app_context():
             user = self.get_user(telegram_id)
             
-            if user.user_type != \'employer\':
+            if user.user_type != 'employer':
                 self.bot.send_message(message.chat.id, "❌ Только работодатели могут просматривать статистику")
                 return
             
@@ -980,11 +980,11 @@ class TelegramHRBot:
             total_applications = self.db.session.query(Application).join(Job).filter(Job.employer_id == user.id).count()
             pending_applications = self.db.session.query(Application).join(Job).filter(
                 Job.employer_id == user.id, 
-                Application.status == \'pending\'
+                Application.status == 'pending'
             ).count()
             accepted_applications = self.db.session.query(Application).join(Job).filter(
                 Job.employer_id == user.id, 
-                Application.status == \'accepted\'
+                Application.status == 'accepted'
             ).count()
             
             text = f"📊 <b>Статистика работодателя</b>\n\n"
@@ -1007,7 +1007,7 @@ class TelegramHRBot:
             self.bot.send_message(
                 message.chat.id,
                 text,
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
     
@@ -1021,9 +1021,9 @@ class TelegramHRBot:
             if data == "main_menu":
                 self.show_main_menu_callback(call)
             elif data == "help":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.handle_help_command(fake_message)
             elif data.startswith("role_"):
@@ -1031,39 +1031,39 @@ class TelegramHRBot:
             elif data == "switch_role":
                 self.show_role_switch(call)
             elif data == "new_job":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.start_job_creation(fake_message)
             elif data == "my_jobs":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_employer_jobs(fake_message)
             elif data == "job_applications":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_job_applications(fake_message)
             elif data == "employer_stats":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_employer_stats(fake_message)
             elif data == "all_jobs":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_jobs_list(fake_message)
             elif data == "my_applications":
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_my_applications(fake_message)
             elif data.startswith("view_job_"):
@@ -1083,9 +1083,9 @@ class TelegramHRBot:
                 self.start_job_application(call, job_id)
             elif data.startswith("jobs_page_"):
                 page = int(data.split("_")[2])
-                fake_message = type(\'obj\', (object,), {
-                    \'chat\': call.message.chat,
-                    \'from_user\': call.from_user
+                fake_message = type('obj', (object,), {
+                    'chat': call.message.chat,
+                    'from_user': call.from_user
                 })
                 self.show_jobs_list(fake_message, page)
             elif data == "already_applied":
@@ -1122,23 +1122,23 @@ class TelegramHRBot:
                 return
             
             state = self.user_states[user_id]
-            job_data = state.get(\'job_data\', {})
+            job_data = state.get('job_data', {})
             
             with self.app.app_context():
                 user = self.get_user(call.from_user.id)
                 
                 # Создаем вакансию
                 job = Job(
-                    title=job_data.get(\'title\', \'\'),
-                    company=job_data.get(\'company\', \'\'),
-                    location=job_data.get(\'location\', \'\'),
-                    salary_min=job_data.get(\'salary_min\'),
-                    salary_max=job_data.get(\'salary_max\'),
-                    description=job_data.get(\'description\', \'\'),
+                    title=job_data.get('title', ''),
+                    company=job_data.get('company', ''),
+                    location=job_data.get('location', ''),
+                    salary_min=job_data.get('salary_min'),
+                    salary_max=job_data.get('salary_max'),
+                    description=job_data.get('description', ''),
                     employer_id=user.id,
-                    employment_type=\'full-time\',
-                    experience_level=\'middle\',
-                    skills_required=\'\',
+                    employment_type='full-time',
+                    experience_level='middle',
+                    skills_required='',
                     is_active=True,
                     created_at=datetime.utcnow()
                 )
@@ -1166,7 +1166,7 @@ class TelegramHRBot:
                     text=text,
                     chat_id=call.message.chat.id,
                     message_id=call.message.message_id,
-                    parse_mode=\'HTML\',
+                    parse_mode='HTML',
                     reply_markup=markup
                 )
                 
@@ -1189,7 +1189,7 @@ class TelegramHRBot:
             text=text,
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            parse_mode=\'HTML\',
+            parse_mode='HTML',
             reply_markup=markup
         )
     
@@ -1203,13 +1203,13 @@ class TelegramHRBot:
             return
         
         state = self.user_states[user_id]
-        action = state.get(\'action\')
+        action = state.get('action')
         
-        if action == \'creating_job\':
+        if action == 'creating_job':
             self.handle_job_creation_input(message, state)
-        elif action == \'searching_jobs\':
+        elif action == 'searching_jobs':
             self.handle_job_search_input(message, state)
-        elif action == \'creating_subscription\':
+        elif action == 'creating_subscription':
             self.handle_subscription_input(message, state)
         else:
             # Неизвестное состояние, сбрасываем
@@ -1218,28 +1218,28 @@ class TelegramHRBot:
     
     def handle_job_creation_input(self, message, state):
         """Обработчик ввода при создании вакансии"""
-        step = state[\'step\']
-        job_data = state[\'job_data\']
+        step = state['step']
+        job_data = state['job_data']
         
-        if step == \'title\':
-            job_data[\'title\'] = message.text
-            state[\'step\'] = \'company\'
+        if step == 'title':
+            job_data['title'] = message.text
+            state['step'] = 'company'
             self.bot.send_message(
                 message.chat.id,
                 "Шаг 2/5: Введите название компании"
             )
-        elif step == \'company\':
-            job_data[\'company\'] = message.text
-            state[\'step\'] = \'location\'
+        elif step == 'company':
+            job_data['company'] = message.text
+            state['step'] = 'location'
             self.bot.send_message(
                 message.chat.id,
                 "Шаг 3/5: Введите местоположение\n"
                 "Например: <i>Москва</i>, <i>Санкт-Петербург</i>, <i>Удаленно</i>",
-                parse_mode=\'HTML\'
+                parse_mode='HTML'
             )
-        elif step == \'location\':
-            job_data[\'location\'] = message.text
-            state[\'step\'] = \'salary\'
+        elif step == 'location':
+            job_data['location'] = message.text
+            state['step'] = 'salary'
             
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("⏭️ Пропустить", callback_data="skip_salary"))
@@ -1249,20 +1249,20 @@ class TelegramHRBot:
                 "Шаг 4/5: Введите зарплату\n"
                 "Формат: <i>от 100000</i>, <i>100000-150000</i> или <i>до 200000</i>\n"
                 "Или нажмите \'Пропустить\'",
-                parse_mode=\'HTML\',
+                parse_mode='HTML',
                 reply_markup=markup
             )
-        elif step == \'salary\':
+        elif step == 'salary':
             self.parse_salary(message.text, job_data)
-            state[\'step\'] = \'description\'
+            state['step'] = 'description'
             self.bot.send_message(
                 message.chat.id,
                 "Шаг 5/5: Введите описание вакансии\n"
                 "Опишите обязанности, требования и условия работы"
             )
-        elif step == \'description\':
-            job_data[\'description\'] = message.text
-            state[\'step\'] = \'confirm\'
+        elif step == 'description':
+            job_data['description'] = message.text
+            state['step'] = 'confirm'
             self.show_job_confirmation(message, job_data)
     
     def parse_salary(self, salary_text: str, job_data: dict):
@@ -1270,43 +1270,43 @@ class TelegramHRBot:
         import re
         
         # Удаляем все кроме цифр, тире и слов "от", "до"
-        clean_text = re.sub(r\'[^\]\\d\\-от до]\', \' \', salary_text.lower())
+        clean_text = re.sub(r'[^\d\-от до]', ' ', salary_text.lower())
         
         # Ищем числа
-        numbers = re.findall(r\'\\d+\', clean_text)
+        numbers = re.findall(r'\d+', clean_text)
         
         if not numbers:
             return
         
-        if \'от\' in clean_text and \'до\' in clean_text:
+        if 'от' in clean_text and 'до' in clean_text:
             # Диапазон: от X до Y
             if len(numbers) >= 2:
-                job_data[\'salary_min\'] = int(numbers[0])
-                job_data[\'salary_max\'] = int(numbers[1])
-        elif \'от\' in clean_text:
+                job_data['salary_min'] = int(numbers[0])
+                job_data['salary_max'] = int(numbers[1])
+        elif 'от' in clean_text:
             # От X
-            job_data[\'salary_min\'] = int(numbers[0])
-        elif \'до\' in clean_text:
+            job_data['salary_min'] = int(numbers[0])
+        elif 'до' in clean_text:
             # До X
-            job_data[\'salary_max\'] = int(numbers[0])
-        elif \'-\' in salary_text and len(numbers) >= 2:
+            job_data['salary_max'] = int(numbers[0])
+        elif '-' in salary_text and len(numbers) >= 2:
             # X-Y
-            job_data[\'salary_min\'] = int(numbers[0])
-            job_data[\'salary_max\'] = int(numbers[1])
+            job_data['salary_min'] = int(numbers[0])
+            job_data['salary_max'] = int(numbers[1])
         else:
             # Одно число - считаем минимальной зарплатой
-            job_data[\'salary_min\'] = int(numbers[0])
+            job_data['salary_min'] = int(numbers[0])
     
     def show_job_confirmation(self, message, job_data):
         """Показывает подтверждение создания вакансии"""
         text = "📋 <b>Подтверждение создания вакансии</b>\n\n"
-        text += f"💼 <b>Название:</b> {job_data[\'title\]}\n"
-        text += f"🏢 <b>Компания:</b> {job_data[\'company\]}\n"
-        text += f"📍 <b>Местоположение:</b> {job_data[\'location\]}\n"
+        text += f"💼 <b>Название:</b> {job_data['title']}\n"
+        text += f"🏢 <b>Компания:</b> {job_data['company']}\n"
+        text += f"📍 <b>Местоположение:</b> {job_data['location']}\n"
         
-        if \'salary_min\' in job_data or \'salary_max\' in job_data:
-            salary_min = job_data.get(\'salary_min\', 0)
-            salary_max = job_data.get(\'salary_max\', 0)
+        if 'salary_min' in job_data or 'salary_max' in job_data:
+            salary_min = job_data.get('salary_min', 0)
+            salary_max = job_data.get('salary_max', 0)
             if salary_min and salary_max:
                 text += f"💰 <b>Зарплата:</b> {salary_min:,} - {salary_max:,} руб.\n"
             elif salary_min:
@@ -1316,7 +1316,7 @@ class TelegramHRBot:
         else:
             text += f"💰 <b>Зарплата:</b> По договоренности\n"
         
-        text += f"\n📝 <b>Описание:</b>\n{job_data[\'description\'][:200]}..."
+        text += f"\n📝 <b>Описание:</b>\n{job_data['description'][:200]}..."
         
         markup = types.InlineKeyboardMarkup(row_width=2)
         markup.add(
@@ -1327,7 +1327,7 @@ class TelegramHRBot:
         self.bot.send_message(
             message.chat.id,
             text,
-            parse_mode=\'HTML\',
+            parse_mode='HTML',
             reply_markup=markup
         )
     
@@ -1337,7 +1337,7 @@ class TelegramHRBot:
         
         with self.app.app_context():
             user = self.db.session.query(User).filter_by(telegram_id=telegram_id).first()
-            user.user_type = \'employer\'
+            user.user_type = 'employer'
             self.db.session.commit()
         
         self.bot.send_message(
@@ -1356,7 +1356,7 @@ class TelegramHRBot:
         
         with self.app.app_context():
             user = self.db.session.query(User).filter_by(telegram_id=telegram_id).first()
-            user.user_type = \'jobseeker\'
+            user.user_type = 'jobseeker'
             self.db.session.commit()
         
         self.bot.send_message(
@@ -1418,8 +1418,8 @@ class TelegramHRBot:
     
     def handle_webhook(self):
         """Обработчик webhook"""
-        if request.headers.get(\'content-type\') == \'application/json\':
-            json_string = request.get_data().decode(\'utf-8\')
+        if request.headers.get('content-type') == 'application/json':
+            json_string = request.get_data().decode('utf-8')
             update = telebot.types.Update.de_json(json_string)
             self.bot.process_new_updates([update])
             return "OK"
