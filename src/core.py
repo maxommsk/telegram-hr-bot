@@ -2,7 +2,7 @@
 import os
 import logging
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy  # <--- ИМПОРТИРУЕМ РАСШИРЕНИЕ
+from flask_sqlalchemy import SQLAlchemy  # <--- Важный импорт
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,6 +29,5 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Связываем SQLAlchemy с нашим приложением
-# ЭТОТ ШАГ ИСПРАВЛЯЕТ ОШИБКУ
+# ЭТОТ ШАГ ИСПРАВЛЯЕТ ОШИБКУ 'RuntimeError'
 db.init_app(app)
-
