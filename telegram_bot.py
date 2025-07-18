@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import logging
 from datetime import datetime, timedelta
@@ -11,14 +10,11 @@ from flask import Flask, request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Добавляем путь к корню проекта
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
+# Импорты моделей (убираем импорты из main)
 from user import User, db
 from job import Job
 from application import Application
 from subscription import Subscription
-# ДОБАВЛЕНО: Импорт NotificationScheduler
 from scheduler import NotificationScheduler
 
 logger = logging.getLogger(__name__)
