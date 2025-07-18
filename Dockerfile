@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Копируем код приложения
-COPY src/ ./src/
+COPY . .
 COPY .env.example .env
 
 # Создаем необходимые директории

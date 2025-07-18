@@ -22,8 +22,9 @@ logger = logging.getLogger(__name__)
 class TelegramHRBot:
     """Основной класс Telegram HR Bot с полным функционалом"""
     
-    def __init__(self, token: str, flask_app: Flask):
+    def __init__(self, token: str, flask_app: Flask, db):
         self.bot = telebot.TeleBot(token)
+        self.db = db
         self.app = flask_app
         self.user_states = {}  # Хранение состояний пользователей
         self.logger = logger  # Добавляем logger как атрибут класса
@@ -67,6 +68,12 @@ class TelegramHRBot:
         self.APPLICATIONS_PER_PAGE = 5
         
         logger.info("TelegramHRBot инициализирован")
+   
+    def run(self, drop_pending_updates: bool = False):
+        """Запускает бота в режиме бесконечного опроса."""
+        self.logger.info("Bot is starting polling...")
+        # infinity_polling - это стандартный метод для непрерывной работы бота
+        self.bot.infinity_polling(skip_pending=drop_pending_updates)  
 
     def get_or_create_user(self, telegram_user):
         """Получает или создает пользователя, возвращает telegram_id"""
