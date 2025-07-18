@@ -10,8 +10,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 # Загружаем переменные окружения
 load_dotenv()
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
+from sqlalchemy import create_engine
 from user import db
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
@@ -57,6 +58,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_timeout': 20,
     'max_overflow': 0
 }
+
+# Создаем engine для health check
+engine = create_engine(database_url)
 
 # Включаем CORS для API
 CORS(app, origins="*")
@@ -174,6 +178,22 @@ def get_stats():
     except Exception as e:
         logger.error(f"Ошибка при получении статистики: {e}")
         return {'error': 'Database not available'}, 503
+
+# Health check endpoint для Docker и мониторинга
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """
+    Health check endpoint for Docker and other monitoring systems.
+    """
+    # Можно добавить проверки, например, доступности БД
+    try:
+        # Попытка простого подключения для проверки
+        connection = engine.connect()
+        connection.close()
+        return jsonify({"status": "ok", "database": "connected"}), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return jsonify({"status": "error", "database": "disconnected"}), 503
 
 # Статические файлы и SPA роутинг
 @app.route('/', defaults={'path': ''})
