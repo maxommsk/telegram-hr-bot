@@ -18,6 +18,8 @@ from user import User, db
 from job import Job
 from application import Application
 from subscription import Subscription
+# ДОБАВЛЕНО: Импорт NotificationScheduler
+from scheduler import NotificationScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,9 @@ class TelegramHRBot:
         # Создаем таблицы если их нет (раскомментируйте если используется Base)
         # Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
+        
+        # ДОБАВЛЕНО: Инициализация планировщика уведомлений
+        self.scheduler = NotificationScheduler(self)
         
         self.setup_handlers()
         
@@ -1449,6 +1454,23 @@ class TelegramHRBot:
             "• Подписываться на уведомления\n\n"
             "Используйте /menu для доступа к функциям."
         )
+    
+    # Функции для работы с планировщиком уведомлений
+    def send_notification(self, telegram_id, message_text):
+        """Отправляет уведомление пользователю через планировщик"""
+        try:
+            if self.scheduler:
+                self.scheduler.send_notification(telegram_id, message_text)
+        except Exception as e:
+            self.logger.error(f"Ошибка при отправке уведомления: {e}")
+    
+    def schedule_job_notification(self, job_id):
+        """Планирует уведомления о новой вакансии"""
+        try:
+            if self.scheduler:
+                self.scheduler.schedule_job_notification(job_id)
+        except Exception as e:
+            self.logger.error(f"Ошибка при планировании уведомления о вакансии: {e}")
     
     # Заглушки для оставшихся методов
     def start_job_search(self, message):
