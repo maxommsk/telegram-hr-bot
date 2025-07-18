@@ -8,6 +8,8 @@ from typing import Optional, Dict, Any
 import telebot
 from telebot import types
 from flask import Flask, request
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Добавляем путь к корню проекта
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -27,6 +29,36 @@ class TelegramHRBot:
         self.app = flask_app
         self.user_states = {}  # Хранение состояний пользователей
         self.logger = logger  # Добавляем logger как атрибут класса
+        
+        # ИСПРАВЛЕННЫЙ КОД ДЛЯ ПОДКЛЮЧЕНИЯ К БД
+        # Собираем строку подключения к БД из переменных окружения
+        db_user = os.getenv('POSTGRES_USER')
+        db_password = os.getenv('POSTGRES_PASSWORD')
+        db_host = os.getenv('POSTGRES_HOST')
+        db_port = os.getenv('POSTGRES_PORT')
+        db_name = os.getenv('POSTGRES_DB')
+
+        # Проверяем, что все переменные загружены
+        if not all([db_user, db_password, db_host, db_port, db_name]):
+            logger.error("Одна или несколько переменных окружения для подключения к БД не установлены!")
+            logger.error(f"POSTGRES_USER: {db_user}")
+            logger.error(f"POSTGRES_PASSWORD: {'***' if db_password else None}")
+            logger.error(f"POSTGRES_HOST: {db_host}")
+            logger.error(f"POSTGRES_PORT: {db_port}")
+            logger.error(f"POSTGRES_DB: {db_name}")
+            # В реальном приложении здесь лучше выбросить исключение, чтобы остановить запуск
+            raise ValueError("Database environment variables not set")
+
+        database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        logger.info(f"Подключение к БД: postgresql://{db_user}:***@{db_host}:{db_port}/{db_name}")
+
+        # Создаем подключение к БД (если используется SQLAlchemy Core)
+        self.engine = create_engine(database_url)
+        
+        # Создаем таблицы если их нет (раскомментируйте если используется Base)
+        # Base.metadata.create_all(self.engine)
+        self.Session = sessionmaker(bind=self.engine)
+        
         self.setup_handlers()
         
         # Константы для пагинации
@@ -1457,4 +1489,3 @@ class TelegramHRBot:
             return "OK"
         else:
             return "Bad Request", 400
-
