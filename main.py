@@ -4,7 +4,7 @@ from flask import Flask, jsonify
 from dotenv import load_dotenv
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
-from database import init_db, engine
+from init_db import init_db, engine
 
 # ДОБАВИТЬ ЭТОТ БЛОК
 import logging
