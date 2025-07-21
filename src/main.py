@@ -10,7 +10,7 @@ from init_db import init_db
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
 
-init_db()
+init_db(db)
 
 # ИЗМЕНЕНИЕ 2: Передаем 'db' в конструктор бота
 bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
