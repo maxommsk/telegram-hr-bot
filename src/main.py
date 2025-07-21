@@ -5,7 +5,7 @@ from flask import jsonify
 from waitress import serve
 
 # ИЗМЕНЕНИЕ 1: Импортируем 'db' вместо 'engine'
-from core import app, db, logger
+from .core import app, db, logger
 from init_db import init_db
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
