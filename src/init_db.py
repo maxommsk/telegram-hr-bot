@@ -5,9 +5,6 @@ from sqlalchemy.orm import sessionmaker
 from core import logger, db
 from user import User
 
-# Инициализация сессии
-Session = sessionmaker(bind=engine)
-
 def init_db(db):
     try:
         # Создаем таблицы
