@@ -1,11 +1,14 @@
 # main.py
 import os
+import sys
 from threading import Thread
 from flask import jsonify
 from waitress import serve
 
+sys.path.append(os.path.dirname(__file__))
+
 # ИЗМЕНЕНИЕ 1: Импортируем 'db' вместо 'engine'
-from .core import app, db, logger
+from core import app, db, logger
 from init_db import init_db
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
