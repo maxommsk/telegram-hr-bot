@@ -51,6 +51,7 @@ def create_tables_sql():
         last_name VARCHAR(255),
         phone_number VARCHAR(20),
         email VARCHAR(255),
+        user_type VARCHAR(50) DEFAULT 'jobseeker', 
         is_active BOOLEAN DEFAULT TRUE,
         is_admin BOOLEAN DEFAULT FALSE,
         registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
