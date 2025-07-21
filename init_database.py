@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 def get_database_url():
     """Получает URL подключения к базе данных из переменных окружения"""
+    db_user = os.getenv('POSTGRES_USER')
+    db_password = os.getenv('POSTGRES_PASSWORD')
+    db_host = os.getenv('POSTGRES_HOST')
+    db_port = os.getenv('POSTGRES_PORT')
     db_name = os.getenv('POSTGRES_DB')
     
     if not all([db_user, db_password, db_host, db_port, db_name]):
@@ -30,25 +34,31 @@ def get_database_url():
     
     return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
-def init_database():
-    """
-    Инициализирует базу данных, создавая все таблицы на основе импортированных моделей.
-    """
-    try:
-        # Импортируем базовый класс и все модели здесь, чтобы они были зарегистрированы
+def init-то импортированы до вызова create_all.
         from database.models import Base
-        # Убедитесь, что все ваши модели импортированы где-то, чтобы Base их "увидел"
-        # Например, если у вас есть models/user.py, models/job.py и т.д.
-        # и они импортируются в database/models/__init__.py, этого достаточно.
-        # Если нет, их нужно импортировать явно:
-        import models.user
-        import models.            result = connection.execute(text("SELECT version();"))
-            logger.info(f"PostgreSQL версия: {result.fetchone()[0]}")
         
-        logger.info("Создание всех таблиц на основе моделей SQLAlchemy...")
+        # --- ВАЖНО: Убедитесь, что ваши модели импортируются ---
+        # Обычно это делается в файле, где определен Base (например, в database/models/__init__.py)
+        # Если ваши модели лежат в отдельных файлах (например, src/models/user.py),
+        # и они нигде не импортируются все вместе, их нужно импортировать здесь,
+        # чтобы SQLAlchemy о них "узнал".
+        # Пример:
+        # import models.user
+        # import models.job
+        # import models.subscription
+        # import models.job_application
+        # import models.job_favorite
+        # import models.user_resume
+        # import models.notification
+        # import models.user_statistic
+
+        database_url = get_database_url()
+        engine = create_engine(database_url)
         
-        # Эта команда - ключ ко всему. Она создает таблицы по Python-моделям.
-        Base.metadata.create_all(engine)
+        logger.info("Подключение к базе данных установлено.")
+        
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT version();"))create_all(engine)
         
         logger.info("✅ Все таблицы успешно созданы!")
         return True
@@ -57,17 +67,4 @@ def init_database():
         logger.error(f"Ошибка при инициализации базы данных: {e}", exc_info=True)
         return False
 
-def main():
-    """Главная функция"""
-    print("🚀 Инициализация базы данных HR Bot (на основе моделей SQLAlchemy)")
-    print("=" * 60)
-    success = init_database()
-    print("=" * 60)
-    if success:
-        print("✅ Инициализация завершена успешно!")
-    else:
-        print("❌ Инициализация завершена с ошибками!")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
+de
