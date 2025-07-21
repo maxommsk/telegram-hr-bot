@@ -1,6 +1,6 @@
 # init_db.py
 from sqlalchemy.orm import declarative_base
-from core import engine # Импортируем engine из нового файла core.py
+from .core import engine # Импортируем engine из нового файла core.py
 
 Base = declarative_base()
 
