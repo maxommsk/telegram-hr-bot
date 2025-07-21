@@ -13,7 +13,7 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
     email = db.Column(db.String(120), nullable=True, index=True)
-    phone = db.Column(db.String(20), nullable=True)
+    phone_number = db.Column(db.String(20), nullable=True)
     
     # User type: 'employer' or 'jobseeker'
     user_type = db.Column(db.String(20), nullable=False, default='jobseeker', index=True)
