@@ -84,7 +84,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
-            'phone': self.phone,
+            'phone_number': self.phone,
             'user_type': self.user_type,
             'company': self.company,
             'position': self.position,
