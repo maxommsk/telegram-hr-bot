@@ -14,8 +14,11 @@ sys.path.append(os.path.dirname(__file__))
 # Загружаем переменные окружения из файла .env
 load_dotenv()
 
-# ИСПРАВЛЕНИЕ: импортируем модели из правильных файлов
+# ИСПРАВЛЕНИЕ: импортируем модели из ВСЕХ файлов
 from src.user import *
+from src.application import *
+from src.job import *
+from src.subscription import *
 
 # Настраиваем систему логирования
 logging.basicConfig(
@@ -36,7 +39,7 @@ def initialize_database():
         from src.main import app, db
         logger.info("Импорт 'app' и 'db' успешно завершен.")
 
-        logger.info("Модели пользователей импортированы из src.user")
+        logger.info("Все модели импортированы: User, Application, Job, Subscription")
 
         with app.app_context():
             logger.info("Вход в контекст приложения Flask.")
