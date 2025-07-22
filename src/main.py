@@ -13,11 +13,17 @@ from init_db import init_db
 from telegram_bot import TelegramHRBot
 from scheduler import NotificationScheduler
 
-init_db(db)
+# Инициализируем БД в контексте приложения
+with app.app_context():
+    init_db(db)
 
 # ИЗМЕНЕНИЕ 2: Передаем 'db' в конструктор бота
 bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-telegram_bot = TelegramHRBot(token=bot_token, db=db, flask_app=app) if bot_token else None
+telegram_bot = None
+if bot_token and ':' in bot_token:
+    telegram_bot = TelegramHRBot(token=bot_token, db=db, flask_app=app)
+else:
+    logger.warning("TELEGRAM_BOT_TOKEN отсутствует или некорректен - бот не будет запущен")
 
 # ... (остальной код без изменений до health_check)
 
