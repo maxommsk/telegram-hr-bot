@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from user import db
+from core import db
 
 class Job(db.Model):
     __tablename__ = 'jobs'
