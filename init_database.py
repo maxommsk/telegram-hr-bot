@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Скрипт для инициализации базы данных для Flask-приложения.
+Простой скрипт для инициализации базы данных.
 """
 
 import os
@@ -8,57 +8,39 @@ import sys
 import logging
 from dotenv import load_dotenv
 
-# Добавляем корневую папку проекта в путь Python
-sys.path.append(os.path.dirname(__file__))
+# Добавляем папку src в путь Python
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-# Загружаем переменные окружения из файла .env
 load_dotenv()
 
-# ИСПРАВЛЕНИЕ: импортируем модели из ВСЕХ файлов
-from src.user import *
-from src.application import *
-from src.job import *
-from src.subscription import *
-
-# Настраиваем систему логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 def initialize_database():
-    """
-    Основная функция для инициализации базы данных.
-    """
     logger.info("🚀 Запуск скрипта инициализации базы данных...")
     
     try:
-        logger.info("Импортируем 'app' и 'db' из 'src.main'...")
-        from src.main import app, db
-        logger.info("Импорт 'app' и 'db' успешно завершен.")
-
-        logger.info("Все модели импортированы: User, Application, Job, Subscription")
-
+        # Импортируем напрямую из core.py, минуя main.py
+        logger.info("Импортируем app и db напрямую из core...")
+        from core import app, db
+        
+        # Принудительно импортируем все модели
+        logger.info("Импортируем все модели...")
+        import user
+        import application  
+        import job
+        import subscription
+        
         with app.app_context():
-            logger.info("Вход в контекст приложения Flask.")
-            
-            db_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
-            logger.info(f"Используется URI базы данных: {db_uri}")
-
-            logger.info("Выполняется команда db.create_all() для создания таблиц...")
+            logger.info("Создание всех таблиц...")
             db.create_all()
-            
-            logger.info("✅ Команда db.create_all() успешно выполнена.")
+            logger.info("✅ Все таблицы созданы!")
 
     except Exception as e:
-        logger.error(f"❌ Произошла непредвиденная ошибка во время инициализации БД.")
-        logger.error(f"   Текст системной ошибки: {e}", exc_info=True)
+        logger.error(f"❌ Ошибка: {e}", exc_info=True)
         sys.exit(1)
 
-    logger.info("🎉 Инициализация базы данных успешно завершена!")
-
+    logger.info("🎉 Инициализация завершена!")
 
 if __name__ == "__main__":
     initialize_database()
