@@ -1,16 +1,17 @@
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from core import logger, db
-from user import User
+
+# Импортируем модели, чтобы они зарегистрировались в метаданных SQLAlchemy
+from user import User  # noqa: F401
+from job import Job  # noqa: F401
+from application import Application  # noqa: F401
+from subscription import Subscription  # noqa: F401
+
 
 def init_db(db):
+        """Создает все таблицы, определённые моделями."""
     try:
-        # Создаем таблицы
-        User.metadata.create_all(db.engine)
-        Vacancy.metadata.create_all(db.engine)
-        Candidate.metadata.create_all(db.engine)
+              db.create_all()
+
         logger.info("База данных успешно инициализирована.")
     except Exception as e:
         logger.error(f"Ошибка при инициализации БД: {e}")
