@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Простой скрипт для инициализации базы данных.
+Отладочный скрипт для инициализации базы данных.
 """
 
 import os
@@ -20,7 +20,7 @@ def initialize_database():
     logger.info("🚀 Запуск скрипта инициализации базы данных...")
     
     try:
-        # Импортируем напрямую из core.py, минуя main.py
+        # Импортируем напрямую из core.py
         logger.info("Импортируем app и db напрямую из core...")
         from core import app, db
         
@@ -32,9 +32,29 @@ def initialize_database():
         import subscription
         
         with app.app_context():
+            logger.info("Проверяем зарегистрированные модели...")
+            
+            # Выводим все зарегистрированные таблицы
+            tables = list(db.metadata.tables.keys())
+            logger.info(f"Найденные модели/таблицы: {tables}")
+            
+            if not tables:
+                logger.warning("⚠️ Не найдено ни одной модели!")
+                logger.info("Проверяем импортированные классы...")
+                logger.info(f"user модуль: {dir(user)}")
+                logger.info(f"application модуль: {dir(application)}")
+                logger.info(f"job модуль: {dir(job)}")
+                logger.info(f"subscription модуль: {dir(subscription)}")
+            
             logger.info("Создание всех таблиц...")
             db.create_all()
-            logger.info("✅ Все таблицы созданы!")
+            logger.info("✅ Команда db.create_all() выполнена!")
+            
+            # Проверяем, что действительно создалось
+            logger.info("Проверяем созданные таблицы в базе...")
+            result = db.session.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+            actual_tables = [row[0] for row in result]
+            logger.info(f"Реальные таблицы в базе: {actual_tables}")
 
     except Exception as e:
         logger.error(f"❌ Ошибка: {e}", exc_info=True)
