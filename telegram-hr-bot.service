@@ -1,0 +1,35 @@
+[Unit]
+Description=Telegram HR Bot
+Documentation=https://github.com/maxommsk/telegram-hr-bot
+After=network.target docker.service
+Requires=docker.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+Group=root
+WorkingDirectory=/opt/telegram-hr-bot
+Environment=COMPOSE_PROJECT_NAME=telegram_hr_bot
+
+# Команды запуска и остановки
+ExecStartPre=/usr/bin/docker-compose -f docker-compose.production.yml down
+ExecStart=/usr/bin/docker-compose -f docker-compose.production.yml up -d
+ExecStop=/usr/bin/docker-compose -f docker-compose.production.yml down
+ExecReload=/usr/bin/docker-compose -f docker-compose.production.yml restart
+
+# Настройки перезапуска
+TimeoutStartSec=300
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=30
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=telegram-hr-bot
+
+[Install]
+WantedBy=multi-user.target
