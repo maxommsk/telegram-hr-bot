@@ -1,28 +1,20 @@
 [Unit]
 Description=Telegram HR Bot
-Documentation=https://github.com/maxommsk/telegram-hr-bot
 After=network.target docker.service
 Requires=docker.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-
-# Указываем правильного пользователя и группу
 User=ubuntu
 Group=ubuntu
-
-# Указываем правильный путь к папке проекта
 WorkingDirectory=/home/ubuntu/telegram-hr-bot
-
 Environment=COMPOSE_PROJECT_NAME=telegram_hr_bot
 
-# --- ИСПРАВЛЕНО: Используем новый синтаксис 'docker compose' ---
 ExecStartPre=/usr/bin/docker compose -f docker-compose.production.yml down --remove-orphans
 ExecStart=/usr/bin/docker compose -f docker-compose.production.yml up --build -d
 ExecStop=/usr/bin/docker compose -f docker-compose.production.yml down
 
-# Настройки перезапуска
 Restart=on-failure
 RestartSec=30
 
