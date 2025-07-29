@@ -1,61 +1,25 @@
-# Multi-stage build для уменьшения размера образа
-FROM python:3.11-slim as builder
-
-# Установка системных зависимостей для сборки
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Создание виртуального окружения
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Копирование и установка зависимостей
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Продакшен образ
 FROM python:3.11-slim
 
-# Установка только runtime зависимостей
+# Установка системных зависимостей
 RUN apt-get update && apt-get install -y \
-    libpq5 \
     curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && useradd --create-home --shell /bin/bash app
+    && rm -rf /var/lib/apt/lists/*
 
-# Копирование виртуального окружения из builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Установка рабочей директории
 WORKDIR /app
 
-# Копирование кода приложения
-COPY *.py ./
-COPY .env.production .env
+# Копирование и установка Python зависимостей
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Создание необходимых директорий
-RUN mkdir -p logs uploads && \
-    chown -R app:app /app
+# Копирование исходного кода (БЕЗ auto_restart.py!)
+COPY src/ ./src/
+COPY entrypoint.sh .
 
-# Переключение на пользователя приложения
-USER app
+# Создание директорий для логов и загрузок
+RUN mkdir -p /app/logs /app/uploads
 
-# Настройка переменных окружения
-ENV PYTHONPATH=/app
-ENV FLASK_APP=main.py
-ENV FLASK_ENV=production
-ENV PYTHONUNBUFFERED=1
+# Делаем entrypoint исполняемым
+RUN chmod +x entrypoint.sh
 
-# Проверка здоровья
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/health || exit 1
-
-# Открытие порта
-EXPOSE 5000
-
-# Команда запуска
-CMD ["python", "main.py"]
+# Важно: запускаем напрямую main.py, НЕ auto_restart.py
+CMD ["python", "src/main.py"]
