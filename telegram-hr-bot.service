@@ -17,7 +17,7 @@ EnvironmentFile=/home/ubuntu/telegram-hr-bot/.env.production
 Environment=COMPOSE_PROJECT_NAME=telegram_hr_bot
 
 ExecStartPre=/usr/bin/docker compose -f docker-compose.production.yml down --remove-orphans
-ExecStart=/usr/bin/docker compose -f docker-compose.production.yml up --build -d
+ExecStart=/usr/bin/docker compose --verbose -f docker-compose.production.yml up --build -d
 ExecStop=/usr/bin/docker compose -f docker-compose.production.yml down
 
 Restart=on-failure
