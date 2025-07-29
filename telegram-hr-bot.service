@@ -9,9 +9,9 @@ StartLimitBurst=3
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-User=root
-Group=root
-WorkingDirectory=/opt/telegram-hr-bot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/telegram-hr-bot
 Environment=COMPOSE_PROJECT_NAME=telegram_hr_bot
 
 # Команды запуска и остановки
