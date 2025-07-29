@@ -1,17 +1,27 @@
 [Unit]
-Description=DEBUGGING Telegram HR Bot Environment
+Description=Telegram HR Bot
+Documentation=https://github.com/maxommsk/telegram-hr-bot
+After=network.target docker.service
+Requires=docker.service
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/telegram-hr-bot
 
-# Мы по-прежнему используем EnvironmentFile, чтобы проверить, читает ли он его
+# Теперь эта строка будет работать правильно, так как .env.production очищен
 EnvironmentFile=/home/ubuntu/telegram-hr-bot/.env.production
 
-# --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Запускаем ТОЛЬКО отладочный скрипт ---
-ExecStart=/home/ubuntu/telegram-hr-bot/debug_env.sh
+Environment=COMPOSE_PROJECT_NAME=telegram_hr_bot
+
+ExecStartPre=/usr/bin/docker compose -f docker-compose.production.yml down --remove-orphans
+ExecStart=/usr/bin/docker compose -f docker-compose.production.yml up --build -d
+ExecStop=/usr/bin/docker compose -f docker-compose.production.yml down
+
+Restart=on-failure
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
